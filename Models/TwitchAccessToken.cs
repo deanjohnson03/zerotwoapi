@@ -14,4 +14,6 @@ public class TwitchAccessToken : TwitchBaseResponse
 
     [JsonProperty("token_type")]
     public string? TokenType { get; set; }
+
+    public DateTime DateRequested { get; set; }
 }

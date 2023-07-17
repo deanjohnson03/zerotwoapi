@@ -54,6 +54,7 @@ public class TwitchTokenRepository : ITwitchTokenRepository
 
             if (token.IsRequestSuccess)
             {
+                token.DateRequested = DateTime.Now;
                 _memoryCache.Set("TwitchAuthToken", token);
                 return token;
             }
@@ -66,16 +67,9 @@ public class TwitchTokenRepository : ITwitchTokenRepository
         }
         else
         {
-            var tokenExpiryTime = DateTimeOffset.FromUnixTimeSeconds(token.ExpiresIn);
+            var expiryTime = token.ExpiresIn - 3600;
 
-            var currentEpochTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            var tokenExpiryTime2 = currentEpochTime + token.ExpiresIn;
-
-            // TODO - This is broken, I want to work out the expiry time so I know when
-            //        to get another token.
-            var x = DateTimeOffset.FromUnixTimeSeconds(tokenExpiryTime2);
-
-            if (tokenExpiryTime >= DateTime.Now.AddMinutes(-5))
+            if (DateTime.Now >= token.DateRequested.AddSeconds(expiryTime))
             {
                 _memoryCache.Remove("TwitchAuthToken");
 
@@ -83,6 +77,7 @@ public class TwitchTokenRepository : ITwitchTokenRepository
 
                 if (token.IsRequestSuccess)
                 {
+                    token.DateRequested = DateTime.Now;
                     _memoryCache.Set("TwitchAuthToken", token);
                     return token;
                 }
